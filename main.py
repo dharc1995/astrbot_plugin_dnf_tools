@@ -3,6 +3,7 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 import hashlib
 import time
+import random
 
 province=[3,7,11,14,16,20,21,29,30,36,41,44,53,55,58,62]
 chanel=[20,21,22,23,24,25,26,27,28,29,30,31]
@@ -36,11 +37,11 @@ class MyPlugin(Star):
         user_qq = event.get_sender_id() # 获取用户的 QQ 号
         today_timestamp = int(time.mktime(time.localtime(time.time())[:3] + (0, 0, 0, 0, 0, -1)))
         random_seed=str(user_qq)+str(today_timestamp)
-        hash_value_province = int(hashlib.md5(random_seed.encode()).hexdigest(), 16) 
-        province_index = hash_value_province % len(province)               
+        # 使用 random_seed 作为种子，确保每次结果一致
+        rng = random.Random(random_seed)
+        province_index = rng.randrange(len(province))
         selected_province = province[province_index]
-        hash_value_chanel = int(hashlib.md5(random_seed.encode()).hexdigest(), 12) 
-        chanel_index = hash_value_chanel % len(province)               
+        chanel_index = rng.randrange(len(chanel))
         selected_chanel = chanel[chanel_index]
         ch=str(selected_province)+str(0)+str(selected_chanel)
         channel_name = province_chanel_map.get(selected_chanel, "未知频道")        
