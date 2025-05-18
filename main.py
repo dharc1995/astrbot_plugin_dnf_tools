@@ -21,7 +21,7 @@ province_chanel_map = {
     30: "重力之泉",
     31: "重力之泉",
 }
-@register("helloworld", "YourName", "一个简单的 Hello World 插件", "1.0.0")
+@register("dnftools", "114514", "dnf幸运频道", "1.0.0")
 class MyPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
