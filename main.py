@@ -1,41 +1,10 @@
-from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
+from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
-from astrbot.api import logger
-import hashlib
-import time
-import random
 
-province=[3,7,11,14,16,20,21,29,30,36,41,44,53,55,58,62]
-channel=[20,21,22,23,24,25,26,27,28,29,30,31,32]
-province_chanel_map = {
-    20: "贝尔玛尔公国",
-    21: "第七帝国",
-    22: "魔界",
-    23: "瓦哈伊特",
-    24: "白海",
-    25: "重力之泉",
-    26: "重力之泉",
-    27: "重力之泉",
-    28: "重力之泉",
-    29: "重力之泉",
-    30: "重力之泉",
-    31: "重力之泉",
-    32: "重力之泉",
-    68: "重力之泉",
-    69: "重力之泉",
-}
-def lucky_channel(user_qq: str) -> str:
-    """计算用户的幸运频道"""
-    today_timestamp = int(time.mktime(time.localtime(time.time())[:3] + (0, 0, 0, 0, 0, -1)))  # 获取今天的时间戳
-    random_seed = str(user_qq) + str(today_timestamp) # 使用 random_seed 作为种子，确保每次结果一致
-    rng = random.Random(random_seed)
-    province_index = rng.randrange(len(province))
-    selected_province = province[province_index]
-    channel_index = rng.randrange(len(channel))
-    selected_chanel = channel[channel_index]
-    ch = str(selected_province) + str(0) + str(selected_chanel)
-    return ch
-@register("dnftools", "dharc1995", "dnf幸运频道", "1.0.0")
+from .core import lucky_channel
+
+
+@register("dnftools", "dharc1995", "dnftools", "1.0.0") # type: ignore
 class dnftools(Star):
     def __init__(self, context: Context):
         super().__init__(context)
@@ -45,8 +14,15 @@ class dnftools(Star):
         message_str= event.message_str  # 获取消息的纯文本内容
         if message_str == "幸运频道":
             # 如果用户发送的消息是 "幸运频道"，则触发幸运频道指令
-            user_name = event.get_sender_name()  # 获取用户的名称
-            user_qq = event.get_sender_id()  # 获取用户的 QQ 号
-            channel = lucky_channel(user_qq)  # 计算幸运频道
-            channel_name = province_chanel_map.get(int(channel[2:]), "未知频道")
+            user_name = event.get_sender_name()  # type: ignore # 获取用户的名称
+            user_qq = event.get_sender_id()  # type: ignore # 获取用户的 QQ 号
+            channel = lucky_channel.lucky_channel(user_qq)  # 计算幸运频道
+            channel_name = lucky_channel.province_chanel_map.get(int(channel[2:]), "未知频道")
             yield event.plain_result(f"{user_name}, 你今天的幸运频道是 {channel}（{channel_name}）！")
+    
+    @filter.command("当前频道与大区列表")
+    async def list_channels_list(self, event: AstrMessageEvent):
+        '''这是一个 hello world 指令''' # 这是 handler 的描述，将会被解析方便用户了解插件内容。非常建议填写。
+        result = lucky_channel.list_all_channels_and_provinces()
+        yield event.plain_result(result) # 发送一条纯文本消息
+    
