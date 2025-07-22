@@ -4,7 +4,7 @@ import time
 
 province=[3,7,11,14,16,20,21,29,30,36,41,44,53,55,58,62]
 channel=[20,21,22,23,24,25,26,27,28,29,30,31,32]
-chanel_map = {
+channel_map = {
     20: "贝尔玛尔公国",
     21: "第七帝国",
     22: "魔界",
@@ -21,17 +21,23 @@ chanel_map = {
     68: "重力之泉",
     69: "重力之泉",
 }
+def get_today_zero_timestamp():
+    """获取当天零点时间戳"""
+    t = time.localtime()
+    zero_time = time.struct_time((t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, t.tm_wday, t.tm_yday, t.tm_isdst))
+    return int(time.mktime(zero_time))
+
 def lucky_channel(user_qq: str):
     """计算用户的幸运频道"""
-    today_timestamp = int(time.mktime(time.localtime(time.time())[:3] + (0, 0, 0, 0, 0, -1)))  # 获取今天的时间戳
+    today_timestamp = get_today_zero_timestamp()  # 获取今天的零点时间戳
     random_seed = str(user_qq) + str(today_timestamp) # 使用 random_seed 作为种子，确保每次结果一致
     rng = random.Random(random_seed)
     province_index = rng.randrange(len(province))
     selected_province = province[province_index]
     channel_index = rng.randrange(len(channel))
-    selected_chanel = channel[channel_index]
-    channel_name = chanel_map.get(selected_chanel, "未知频道")
-    ch = str(selected_province) + str(0) + str(selected_chanel)
+    selected_channel = channel[channel_index]
+    channel_name = channel_map.get(selected_channel, "未知频道")
+    ch = str(selected_province) + str(0) + str(selected_channel)
     result=[ch, channel_name]
     return result
 
