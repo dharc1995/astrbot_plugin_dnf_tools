@@ -41,17 +41,13 @@ class dnftools(Star):
     def __init__(self, context: Context):
         super().__init__(context)
 
-    @event_message_type(EventMessageType.ALL)
-    async def on_message(self, event: AstrMessageEvent) -> MessageEventResult:
-        """处理所有消息事件"""
-        # 这里可以添加通用的消息处理逻辑
-        msg_obj=event.message_obj # 获取消息对象
-        text=msg_obj.message_str or ""# 获取消息的纯文本内容
-
-        if text=="幸运频道":
+    @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
+    async def on_group_message(self, event: AstrMessageEvent):
+        message_str= event.message_str  # 获取消息的纯文本内容
+        if message_str == "幸运频道":
             # 如果用户发送的消息是 "幸运频道"，则触发幸运频道指令
-            user_name=event.get_sender_name()  # 获取用户的名称
-            user_qq=event.get_sender_id()  # 获取用户的 QQ 号
+            user_name = event.get_sender_name()  # 获取用户的名称
+            user_qq = event.get_sender_id()  # 获取用户的 QQ 号
             channel = lucky_channel(user_qq)  # 计算幸运频道
             channel_name = province_chanel_map.get(int(channel[2:]), "未知频道")
             yield event.plain_result(f"{user_name}, 你今天的幸运频道是 {channel}（{channel_name}）！")
