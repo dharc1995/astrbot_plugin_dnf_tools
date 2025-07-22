@@ -35,7 +35,8 @@ def lucky_channel(user_qq: str) -> str:
 
 def list_all_channels_and_provinces() -> list:
     """列出所有频道和对应的省份序号"""
-    result = []
-    result.append(channel) # type: ignore
-    result.append(province) # type: ignore
+    channel = "频道列表: " + ", ".join([str(c) for c in channel])
+    province = "省份列表: " + ", ".join([str(p) for p in province])
+    result = channel
+
     return result
