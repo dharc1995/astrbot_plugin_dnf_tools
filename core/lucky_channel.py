@@ -4,7 +4,7 @@ import time
 
 province=[3,7,11,14,16,20,21,29,30,36,41,44,53,55,58,62]
 channel=[20,21,22,23,24,25,26,27,28,29,30,31,32]
-province_chanel_map = {
+chanel_map = {
     20: "贝尔玛尔公国",
     21: "第七帝国",
     22: "魔界",
@@ -29,15 +29,15 @@ def lucky_channel(user_qq: str):
     province_index = rng.randrange(len(province))
     selected_province = province[province_index]
     channel_index = rng.randrange(len(channel))
-    channel_name = province_chanel_map.get(selected_province, "未知频道")
     selected_chanel = channel[channel_index]
+    channel_name = chanel_map.get(selected_chanel, "未知频道")
     ch = str(selected_province) + str(0) + str(selected_chanel)
     result=[ch, channel_name]
     return result
 
 def list_all_channels_and_provinces():
     """列出所有频道和对应的省份序号"""
-    channel_list_str = "频道列表: " + ", ".join([str(ch) for ch in channel])
-    province_list_str = "大区列表: " + ", ".join([str(prov) for prov in province])
+    channel_list_str = "频道列表: " + "、 ".join([str(ch) for ch in channel])
+    province_list_str = "大区列表: " + "、 ".join([str(prov) for prov in province])
     result = channel_list_str + "\n" + province_list_str
     return result
