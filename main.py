@@ -4,7 +4,7 @@ from astrbot.api.star import Context, Star, register
 from .core import lucky_channel
 
 
-@register("dnftools", "dharc1995", "dnftools", "1.0.0") # type: ignore
+@register("dnftools", "dharc1995", "dnftools", "1.0.0") 
 class dnftools(Star):
     def __init__(self, context: Context):
         super().__init__(context)

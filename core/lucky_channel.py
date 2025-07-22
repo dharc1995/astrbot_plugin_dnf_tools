@@ -21,7 +21,7 @@ province_chanel_map = {
     68: "重力之泉",
     69: "重力之泉",
 }
-def lucky_channel(user_qq: str) -> str:
+def lucky_channel(user_qq: str):
     """计算用户的幸运频道"""
     today_timestamp = int(time.mktime(time.localtime(time.time())[:3] + (0, 0, 0, 0, 0, -1)))  # 获取今天的时间戳
     random_seed = str(user_qq) + str(today_timestamp) # 使用 random_seed 作为种子，确保每次结果一致
@@ -35,7 +35,7 @@ def lucky_channel(user_qq: str) -> str:
     result=[ch, channel_name]
     return result
 
-def list_all_channels_and_provinces() -> str:
+def list_all_channels_and_provinces():
     """列出所有频道和对应的省份序号"""
     channel_list_str = "频道列表: " + ", ".join([str(ch) for ch in channel])
     province_list_str = "大区列表: " + ", ".join([str(prov) for prov in province])
