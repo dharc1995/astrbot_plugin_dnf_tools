@@ -20,7 +20,7 @@ class dnftools(Star):
             yield event.plain_result(f"{user_name}, 你今天的幸运频道是 {channel}（{channel_name}）！")
     
     @filter.command("当前频道与大区列表")
-    async def list_channels_list(self, event: AstrMessageEvent):
+    async def list_channels_list(self, event: AstrMessageEvent): # type: ignore
         '''
         列出当前的频道和大区对应的序号，用来对比本地序号是否与官方游戏更新保持一致。
         返回值为字符串格式，内容为频道与大区的对应列表，适合直接发送为纯文本消息。
