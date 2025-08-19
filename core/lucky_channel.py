@@ -1,6 +1,6 @@
 import random
-import time
 import datetime
+from datetime import timezone
 
 
 province=[3,7,11,14,16,20,21,29,30,36,41,44,53,55,58,62]
@@ -22,32 +22,58 @@ channel_map = {
     68: "重力之泉",
     69: "重力之泉",
 }
-def get_today_zero_timestamp():
-    """获取当天零点时间戳"""
-    t = time.localtime()
-    zero_time = time.struct_time((t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, t.tm_wday, t.tm_yday, t.tm_isdst))
-    return int(time.mktime(zero_time))
+def get_dnf_date():
+    """
+    获取DNF游戏日期（基于北京时间6点刷新）
+    如果北京时间 < 6:00，使用前一天；否则使用当天
+    """
+    # 获取当前UTC时间
+    utc_now = datetime.datetime.now(timezone.utc)
+    
+    # 转换为北京时间（UTC+8）
+    beijing_time = utc_now + datetime.timedelta(hours=8)
+    
+    # 如果北京时间在0:00-5:59之间，使用前一天的日期
+    if beijing_time.hour < 6:
+        dnf_date = (beijing_time - datetime.timedelta(days=1)).date()
+    else:
+        dnf_date = beijing_time.date()
+    
+    return dnf_date
+
+def format_dnf_period(dnf_date):
+    """
+    格式化DNF时间段字符串
+    格式: YYYY/M/D-6:00~YYYY/M/D-5:59
+    """
+    current_day = dnf_date
+    next_day = current_day + datetime.timedelta(days=1)
+    
+    # 格式化日期部分（去掉前导零）
+    current_str = f"{current_day.year}/{current_day.month}/{current_day.day}"
+    next_str = f"{next_day.year}/{next_day.month}/{next_day.day}"
+    
+    return f"{current_str}-6:00~{next_str}-5:59"
 
 def lucky_channel(user_qq: str):
-    """
-    根据字符种子和调整后的日期作为随机种子，从全局数组中各抽取一个元素
-    返回包含组合结果和频道名称的数组
+     """
+    根据字符种子和DNF日期作为随机种子，从全局数组中各抽取一个元素
+    返回包含组合结果、频道名称和DNF时间段的数组
     
     参数:
     char_seed: 字符种子
     
     返回:
-    [组合结果, 频道名称]
+    [组合结果, 频道名称, DNF时间段字符串]
     """
-    # 获取当前UTC时间
-    utc_now = datetime.datetime.utcnow()
+    # 获取DNF游戏日期
+    dnf_date = get_dnf_date()
     
-    # 调整日期：北京时间6点 = UTC时间前一天的0点
-    adjusted_time = utc_now - datetime.timedelta(hours=6)
-    adjusted_date = adjusted_time.date()
+    # 格式化时间段
+    period_str = format_dnf_period(dnf_date)
     
-    # 创建随机种子：字符 + 调整后的日期字符串
-    seed_str = f"{user_qq}{adjusted_date}"
+    # 创建随机种子：字符 + DNF日期
+    seed_str = f"{char_seed}{dnf_date}"
     seed_value = hash(seed_str)
     
     # 设置随机种子
@@ -66,7 +92,7 @@ def lucky_channel(user_qq: str):
     # 查找频道名称
     channel_name = channel_map.get(channel_element, "未知频道")
     
-    return [combined_result, channel_name]
+    return [combined_result, channel_name, period_str]
 
 def list_all_channels_and_provinces():
     """列出所有频道和对应的省份序号"""

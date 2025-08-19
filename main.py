@@ -16,8 +16,8 @@ class dnftools(Star):
             # 如果用户发送的消息是 "幸运频道"，则触发幸运频道指令
             user_name = event.get_sender_name()  # type: ignore # 获取用户的名称
             user_qq = event.get_sender_id()  # type: ignore # 获取用户的 QQ 号
-            channel, channel_name = lucky_channel.lucky_channel(user_qq)  # 计算幸运频道
-            yield event.plain_result(f"{user_name}, 你今天的幸运频道是 {channel}（{channel_name}）！")
+            channel, channel_name,date = lucky_channel.lucky_channel(user_qq)  # 计算幸运频道
+            yield event.plain_result(f"{user_name}, 你今天（{date}）的幸运频道是 {channel}（{channel_name}）！")
     
     @filter.command("当前频道与大区列表")
     async def list_channels_list(self, event: AstrMessageEvent): # type: ignore
