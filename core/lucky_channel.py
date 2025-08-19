@@ -41,7 +41,7 @@ def get_dnf_date():
     
     return dnf_date
 
-def format_dnf_period(dnf_date):
+def format_dnf_period(dnf_date: datetime.date):
     """
     格式化DNF时间段字符串
     格式: YYYY/M/D-6:00~YYYY/M/D-5:59
@@ -56,7 +56,7 @@ def format_dnf_period(dnf_date):
     return f"{current_str}-6:00~{next_str}-5:59"
 
 def lucky_channel(user_qq: str):
-     """
+    """
     根据字符种子和DNF日期作为随机种子，从全局数组中各抽取一个元素
     返回包含组合结果、频道名称和DNF时间段的数组
     
@@ -73,7 +73,7 @@ def lucky_channel(user_qq: str):
     period_str = format_dnf_period(dnf_date)
     
     # 创建随机种子：字符 + DNF日期
-    seed_str = f"{char_seed}{dnf_date}"
+    seed_str = f"{user_qq}{dnf_date}"
     seed_value = hash(seed_str)
     
     # 设置随机种子
