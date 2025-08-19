@@ -1,5 +1,6 @@
 import random
 import time
+import datetime
 
 
 province=[3,7,11,14,16,20,21,29,30,36,41,44,53,55,58,62]
@@ -28,18 +29,44 @@ def get_today_zero_timestamp():
     return int(time.mktime(zero_time))
 
 def lucky_channel(user_qq: str):
-    """计算用户的幸运频道"""
-    today_timestamp = get_today_zero_timestamp()  # 获取今天的零点时间戳
-    random_seed = str(user_qq) + str(today_timestamp) # 使用 random_seed 作为种子，确保每次结果一致
-    rng = random.Random(random_seed)
-    province_index = rng.randrange(len(province))
-    selected_province = province[province_index]
-    channel_index = rng.randrange(len(channel))
-    selected_channel = channel[channel_index]
-    channel_name = channel_map.get(selected_channel, "未知频道")
-    ch = str(selected_province) + str(0) + str(selected_channel)
-    result=[ch, channel_name]
-    return result
+    """
+    根据字符种子和调整后的日期作为随机种子，从全局数组中各抽取一个元素
+    返回包含组合结果和频道名称的数组
+    
+    参数:
+    char_seed: 字符种子
+    
+    返回:
+    [组合结果, 频道名称]
+    """
+    # 获取当前UTC时间
+    utc_now = datetime.datetime.utcnow()
+    
+    # 调整日期：北京时间6点 = UTC时间前一天的0点
+    adjusted_time = utc_now - datetime.timedelta(hours=6)
+    adjusted_date = adjusted_time.date()
+    
+    # 创建随机种子：字符 + 调整后的日期字符串
+    seed_str = f"{user_qq}{adjusted_date}"
+    seed_value = hash(seed_str)
+    
+    # 设置随机种子
+    random.seed(seed_value)
+    
+    # 使用设置的随机种子来抽取元素
+    province_index = random.randint(0, len(province) - 1)
+    channel_index = random.randint(0, len(channel) - 1)
+    
+    province_element = province[province_index]
+    channel_element = channel[channel_index]
+    
+    # 组合并在中间加上0
+    combined_result = f"{province_element}0{channel_element}"
+    
+    # 查找频道名称
+    channel_name = channel_map.get(channel_element, "未知频道")
+    
+    return [combined_result, channel_name]
 
 def list_all_channels_and_provinces():
     """列出所有频道和对应的省份序号"""
