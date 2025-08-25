@@ -33,7 +33,7 @@ class dnftools(Star): # type: ignore
         即有机会获得限定ssr“好呀宝宝”
         '''
         qixi_config_data=gacha.config_data # type: ignore
-        gacha=qixi_gacha.GachaSystem(gacha_config_data) # type: ignore
+        gacha=qixi_gacha.GachaSystem(qixi_config_data) # type: ignore
         user_name = event.get_sender_name()  # type: ignore # 获取用户的名称
         user_qq = event.get_sender_id()  # type: ignore # 获取用户的
         result = gacha.draw(user_qq) # type: ignore
