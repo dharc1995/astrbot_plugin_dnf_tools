@@ -37,4 +37,4 @@ class dnftools(Star): # type: ignore
         user_name = event.get_sender_name()  # type: ignore # 获取用户的名称
         user_qq = event.get_sender_id()  # type: ignore # 获取用户的
         result = gacha.draw(user_qq) # type: ignore
-        yield event.plain_result(f"{user_name}, 恭喜你抽到了 {result['item']['label']} (稀有度: {result['item']['tag']})！") # type: ignore
+        yield event.plain_result(f"{user_name}, 恭喜你抽到了 {result['item']} ！") # type: ignore
