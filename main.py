@@ -32,7 +32,7 @@ class dnftools(Star): # type: ignore
         编辑发送“咱俩试试？”
         即有机会获得限定ssr“好呀宝宝”
         '''
-        qixi_config_data=gacha.config_data # type: ignore
+        qixi_config_data=qixi_gacha.config_data # type: ignore
         gacha=qixi_gacha.GachaSystem(qixi_config_data) # type: ignore
         user_name = event.get_sender_name()  # type: ignore # 获取用户的名称
         user_qq = event.get_sender_id()  # type: ignore # 获取用户的
