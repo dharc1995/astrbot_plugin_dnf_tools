@@ -158,11 +158,7 @@ class GachaSystem:
     def close(self):
         """关闭数据库连接"""
         self.conn.close()
-
-# 示例使用
-if __name__ == "__main__":
-    # 配置数据
-    config_data = [ # type: ignore
+config_data = [ # type: ignore
         {"label": "滚你妈的", "weight": 10, "tag": "R"},
         {"label": "去你妈的", "weight": 10, "tag": "R"},
         {"label": "你也配？", "weight": 10, "tag": "R"},
@@ -184,6 +180,9 @@ if __name__ == "__main__":
         {"label": "好呀宝宝", "weight": 0.01, "tag": "SSR", "type": "ssr"},
         {"label": "其实我也喜欢你好久了", "weight": 0.001, "tag": "SSR", "type": "ssr"}
     ]
+# 示例使用
+if __name__ == "__main__":
+    # 配置数据
     
     # 初始化抽卡系统
     gacha = GachaSystem(config_data=config_data)
