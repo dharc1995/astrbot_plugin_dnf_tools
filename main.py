@@ -1,6 +1,7 @@
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 
+
 from .core import lucky_channel
 
 
@@ -25,3 +26,12 @@ class dnftools(Star):
         '''
         result = lucky_channel.list_all_channels_and_provinces()
         yield event.plain_result(result) # 发送一条纯文本消息
+    @filter.command("查金价")
+    async def call_other(self, event: AstrMessageEvent):
+        # 假设你想调用插件 "echo" 的指令 /echo hello
+        # 构造一个模拟指令
+        target_command = "/分析 https://www.yxdr.com/bijiaqi/dnf/youxibi/shanghai2"
+        
+        # 使用 context.send_message 发送指令给机器人自身处理
+        # 注意：这通常需要确保权限校验能够通过
+        await self.context.inst.handle_message(event.message_obj)
