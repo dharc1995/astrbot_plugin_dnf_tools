@@ -28,14 +28,21 @@ class dnftools(Star):
         yield event.plain_result(result) # 发送一条纯文本消息
     @filter.command("查金价")
     async def call_other(self, event: AstrMessageEvent):
-        # 1. 构造你想触发的指令字符串
-        command_str = "/分析 https://www.yxdr.com/bijiaqi/dnf/youxibi/shanghai2"
+        # 1. 获取指令管理器
+        t_mgr = self.context.t_mgr
         
-        # 2. 克隆当前事件，并修改其消息内容
-        # 这样可以保留原有的 sender、message_obj 等上下文信息
-        new_event = event.clone() 
-        new_event.message_str = command_str
-        new_event.message_obj.message = [Plain(command_str)]
+        # 2. 查找 dnftools 插件注册的指令名 (假设指令是 /分析)
+        # 注意：这里填写的是注册时的指令名称，不带斜杠
+        target_cmd_name = "分析" 
+        handler = t_mgr.get_handler(target_cmd_name)
         
-        # 3. 投递事件，让系统重新处理
-        await self.context.emit_event(new_event)
+        if handler:
+            # 3. 直接调用该函数
+            # 传入当前的 event，如果目标函数需要参数，可以作为关键字参数传入
+            # 例如 dnf_search(event, name="角色名")
+            try:
+                await handler.func(event, name="https://www.yxdr.com/bijiaqi/dnf/youxibi/shanghai2") 
+            except Exception as e:
+                await self.context.send_message(event, f"调用失败: {str(e)}")
+        else:
+            await self.context.send_message(event, f"未找到指令: {target_cmd_name}")
