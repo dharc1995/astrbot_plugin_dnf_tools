@@ -1,7 +1,7 @@
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.api.message_components import Plain
-
+import copy
 from .core import lucky_channel
 
 
@@ -26,23 +26,29 @@ class dnftools(Star):
         '''
         result = lucky_channel.list_all_channels_and_provinces()
         yield event.plain_result(result) # 发送一条纯文本消息
-    @filter.command("查金价")
-    async def call_other(self, event: AstrMessageEvent):
-        # 1. 获取指令管理器
-        t_mgr = self.context.t_mgr
+    @filter.command("goldprice")
+    async def trigger_dnf(self, event: AstrMessageEvent):
+        # 1. 获取指令字符串
+        target_cmd = "/分析 https://www.yxdr.com/bijiaqi/dnf/youxibi/shanghai2"
+
+        # 2. 构造一个模拟的事件
+        # 既然 AiocqhttpMessageEvent 没有 clone，我们手动初始化一个
+        # 注意：直接传递 event.message_obj 是最稳妥的，它包含了所有的 sender 权限信息
+        new_event = AstrMessageEvent(
+            message_obj=event.message_obj,
+            vm=event.vm # 保持相同的虚拟机上下文
+        )
         
-        # 2. 查找 dnftools 插件注册的指令名 (假设指令是 /分析)
-        # 注意：这里填写的是注册时的指令名称，不带斜杠
-        target_cmd_name = "分析" 
-        handler = t_mgr.get_handler(target_cmd_name)
+        # 3. 覆盖消息内容为目标指令
+        new_event.message_str = target_command
+        new_event.message_obj.message = [Plain(target_command)]
         
-        if handler:
-            # 3. 直接调用该函数
-            # 传入当前的 event，如果目标函数需要参数，可以作为关键字参数传入
-            # 例如 dnf_search(event, name="角色名")
-            try:
-                await handler.func(event, name="https://www.yxdr.com/bijiaqi/dnf/youxibi/shanghai2") 
-            except Exception as e:
-                await self.context.send_message(event, f"调用失败: {str(e)}")
-        else:
-            await self.context.send_message(event, f"未找到指令: {target_cmd_name}")
+        # 4. 寻找分发入口
+        # 在新版 AstrBot 中，context 有一个核心引用通常叫 _context 或 engine
+        # 最稳健的方法是使用 context.emit_event
+        try:
+            await self.context.emit_event(new_event)
+        except Exception as e:
+            # 如果 emit_event 也不行，尝试直接通过内部 handle_message
+            # 部分版本中，核心实例可以通过这种方式访问
+            await self.context.get_instance().handle_message(new_event.message_obj)
