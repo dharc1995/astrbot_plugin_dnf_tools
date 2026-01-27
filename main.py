@@ -1,54 +1,62 @@
+import os
+import re
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
-from astrbot.api.message_components import Plain
-import copy
-from .core import lucky_channel
+from astrbot.api.model import MessageChain
+from astrbot.api.model.base import Image
+# 引入业务逻辑
+from .config_manager import ConfigManager
+from .lucky_logic import LuckyLogic
+from .reply_logic import ReplyLogic
 
-
-@register("dnftools", "dharc1995", "dnftools", "1.0.0") 
-class dnftools(Star):
+@register("dnf_tools", "Gemini", "DNF工具箱-解耦带注释版", "2.0.0")
+class DNFToolsPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
-    @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
-    async def on_group_message(self, event: AstrMessageEvent):
-        message_str = event.message_str  # 获取消息的纯文本内容
-        if message_str == "幸运频道":
-            # 如果用户发送的消息是 "幸运频道"，则触发幸运频道指令
-            user_name = event.get_sender_name()  # type: ignore # 获取用户的名称
-            user_qq = event.get_sender_id()  # type: ignore # 获取用户的 QQ 号
-            channel, channel_name,date = lucky_channel.lucky_channel(user_qq)  # 计算幸运频道
-            yield event.plain_result(f"{user_name}, 你今天（{date}）的幸运频道是 {channel}（{channel_name}）！")
-    @filter.command("当前频道与大区列表")
-    async def list_channels_list(self, event: AstrMessageEvent): # type: ignore
-        '''
-        列出当前的频道和大区对应的序号，用来对比本地序号是否与官方游戏更新保持一致。
-        返回值为字符串格式，内容为频道与大区的对应列表，适合直接发送为纯文本消息。
-        '''
-        result = lucky_channel.list_all_channels_and_provinces()
-        yield event.plain_result(result) # 发送一条纯文本消息
-    @filter.command("goldprice")
-    async def trigger_dnf(self, event: AstrMessageEvent):
-        # 1. 获取指令字符串
-        target_cmd = "/分析 https://www.yxdr.com/bijiaqi/dnf/youxibi/shanghai2"
+        p_path = os.path.dirname(__file__)
+        # 初始化各个组件
+        self.cfg_mgr = ConfigManager(p_path)
+        self.lucky_logic = LuckyLogic(self.cfg_mgr)
+        self.reply_logic = ReplyLogic(self.cfg_mgr, p_path)
 
-        # 2. 构造一个模拟的事件
-        # 既然 AiocqhttpMessageEvent 没有 clone，我们手动初始化一个
-        # 注意：直接传递 event.message_obj 是最稳妥的，它包含了所有的 sender 权限信息
-        new_event = AstrMessageEvent(
-            message_obj=event.message_obj,
-            vm=event.vm # 保持相同的虚拟机上下文
-        )
+    @filter.command("幸运频道")
+    async def lucky_channel(self, event: AstrMessageEvent):
+        """响应幸运频道指令"""
+        res, t_range = self.lucky_logic.get_lucky_result(event.get_sender_id())
+        if res: 
+            yield event.plain_result(f"{event.get_sender_name()}, 今天的幸运频道是 {res}！\n有效时间：{t_range}")
+
+    @filter.command("添加回复")
+    async def add_reply(self, event: AstrMessageEvent):
+        """管理指令：添加自定义回复"""
+        # 权限判定：仅限管理员
+        if not event.event.message_obj.sender.role.name in ["ADMIN", "OWNER"]: return
         
-        # 3. 覆盖消息内容为目标指令
-        new_event.message_str = target_command
-        new_event.message_obj.message = [Plain(target_command)]
+        # 解析指令中的关键词
+        parts = event.get_plain_text().replace("添加回复", "").strip().split(maxsplit=1)
+        if not parts: return
         
-        # 4. 寻找分发入口
-        # 在新版 AstrBot 中，context 有一个核心引用通常叫 _context 或 engine
-        # 最稳健的方法是使用 context.emit_event
-        try:
-            await self.context.emit_event(new_event)
-        except Exception as e:
-            # 如果 emit_event 也不行，尝试直接通过内部 handle_message
-            # 部分版本中，核心实例可以通过这种方式访问
-            await self.context.get_instance().handle_message(new_event.message_obj)
+        keyword = parts[0]
+        # 查找消息链中是否存在图片
+        img_node = next((n for n in event.get_messages() if isinstance(n, Image)), None)
+        
+        if img_node: # 如果有图，执行图片添加逻辑
+            ok, res = self.reply_logic.add_reply(keyword, "image", "", url=img_node.url)
+        elif len(parts) > 1: # 否则执行纯文本添加逻辑
+            ok, res = self.reply_logic.add_reply(keyword, "text", parts[1])
+        else: 
+            return
+        
+        yield event.plain_result(f"添加{'成功' if ok else '失败'}: {res}")
+
+    @filter.on_decorators([filter.event_message])
+    async def handle_words(self, event: AstrMessageEvent):
+        """全量消息处理器：处理关键词自动回复"""
+        # 匹配回复内容
+        r_type, content = self.reply_logic.match_reply(event.get_plain_text().strip())
+        
+        if r_type == "text": 
+            yield event.plain_result(content)
+        elif r_type == "image" and os.path.exists(content):
+            # 构造图片消息链
+            yield event.chain_result(MessageChain().chain([Image.fromFileSystem(content)]))
