@@ -2,7 +2,8 @@ import os
 import re
 import uuid
 import requests
-from astrbot.api.event import filter, AstrMessageEvent
+# 核心变化：直接从 event 导入 on
+from astrbot.api.event import filter, AstrMessageEvent, on
 from astrbot.api.star import Context, Star, register
 from astrbot.api.message_components import Image, Plain 
 
@@ -11,7 +12,7 @@ from .config_manager import ConfigManager
 from .lucky_logic import LuckyLogic
 from .reply_logic import ReplyLogic
 
-@register("dnf_tools", "Gemini", "DNF工具箱", "2.1.2")
+@register("dnf_tools", "Gemini", "DNF工具箱", "2.1.3")
 class DNFToolsPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
@@ -30,11 +31,9 @@ class DNFToolsPlugin(Star):
     @filter.command("添加回复")
     async def add_reply(self, event: AstrMessageEvent):
         """管理指令：添加自定义回复"""
-        # 权限判定
         if not event.event.message_obj.sender.role.name in ["ADMIN", "OWNER"]: 
             return
         
-        # 解析指令
         msg_text = event.get_plain_text().replace("添加回复", "").strip()
         parts = msg_text.split(maxsplit=1)
         if not parts: 
@@ -43,7 +42,7 @@ class DNFToolsPlugin(Star):
         
         keyword = parts[0]
         
-        # 寻找图片节点
+        # 获取图片节点
         img_node = None
         if event.message_obj and event.message_obj.message:
             for msg in event.message_obj.message:
@@ -61,15 +60,16 @@ class DNFToolsPlugin(Star):
         
         yield event.plain_result(f"添加{'成功' if ok else '失败'}: {res}")
 
-    # --- 关键修正点 ---
-    @filter.on(filter.event_message)
+    # --- 修正后的监听写法 ---
+    @on.message_created
     async def handle_words(self, event: AstrMessageEvent):
-        """关键词自动回复监听"""
-        # 逻辑：如果命中指令则不执行此监听逻辑，防止重复回复
-        if event.get_plain_text().startswith("幸运频道") or event.get_plain_text().startswith("添加回复"):
+        """关键词自动回复监听：监听所有消息创建事件"""
+        # 排除指令类消息，避免干扰
+        full_text = event.get_plain_text().strip()
+        if full_text.startswith("幸运频道") or full_text.startswith("添加回复") or full_text.startswith("/"):
             return
         
-        r_type, content = self.reply_logic.match_reply(event.get_plain_text().strip())
+        r_type, content = self.reply_logic.match_reply(full_text)
         
         if r_type == "text": 
             yield event.plain_result(content)
