@@ -3,7 +3,8 @@ import re
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 # 修正导入路径：移除 astrbot.api.model，改用基础组件导入
-from astrbot.api.message_components import * from astrbot.api.event.base import *
+from astrbot.api.message_components import * 
+from astrbot.api.event.base import *
 
 # 引入业务逻辑
 from .config_manager import ConfigManager
