@@ -1,5 +1,5 @@
 name: dnftools # 这是你的插件的唯一识别名。
 desc: dnf # 插件简短描述
 version: v0.3.2 # 插件版本号。
-author: 114514 # 作者
+author: "114514" # 作者
 repo: https://github.com/dharc1995/astrbot_plugin_dnf_tools # 插件的仓库地址

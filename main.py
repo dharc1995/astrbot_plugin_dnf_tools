@@ -5,7 +5,7 @@ import json
 from .lucky_channel.lucky import Lucky_Channel # 导入 lucky_channel 模块中的 LuckyChannel 类
 
 
-@register("dnftools", "创P", "dnf工具", "0.3.1", "repo url")
+@register("dnftools", "114514", "dnf工具", "0.3.1", "repo url")
 class MyPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
