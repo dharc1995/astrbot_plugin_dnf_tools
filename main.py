@@ -1,9 +1,9 @@
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger # 使用 astrbot 提供的 logger 接口
-from .lucky_channel.lucky import LuckyChannel # 导入 lucky_channel 模块中的 LuckyChannel 类
+from .lucky_channel.lucky import Lucky_Channel # 导入 lucky_channel 模块中的 LuckyChannel 类
 
-@register("dnftools", "创P", "dnf工具", "1.0.0", "repo url")
+@register("dnftools", "创P", "dnf工具", "0.3.1", "repo url")
 class MyPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
@@ -15,7 +15,7 @@ class MyPlugin(Star):
         user_name = event.get_sender_name()
         user_qq = event.get_sender_id()
         message_str = event.message_str # 获取消息的纯文本内容
-        lc=LuckyChannel()
+        lc=Lucky_Channel()
         logger.info("触发幸运频道指令!")
         yield event.plain_result(lc.get_lucky_message(user_name,user_qq)) # 发送一条纯文本消息
 
